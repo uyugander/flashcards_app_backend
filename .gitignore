@@ -4,3 +4,5 @@ __pycache__
 data.db
 *.pyc
 .DS_Store
+mykey
+mykey.pub

@@ -21,12 +21,12 @@ class FlashCardUpdateSchema(Schema):
     user_id = fields.Str()
 
 class FlashCardSchema(PlainFlashCardSchema):
-    user_id = fields.Str(required=True, load_only=True)
-    user = fields.Nested(PlainUserSchema(), load_only=True)
-    tags = fields.List(fields.Nested(PlainTagSchema(), dump_only=True))
+    user = fields.Nested(PlainUserSchema(), dump_only=True)   # Include user details
+    tags = fields.List(fields.Str(), required=False, load_only=True)  # Allow tags in request
+    tags = fields.List(fields.Nested(PlainTagSchema()), dump_only=True)  # Directly use 'tags'
 
 class TagSchema(PlainTagSchema):
-    flashcards = fields.List(fields.Nested(PlainFlashCardSchema()), dump_only=True)
+    flashcards = fields.List(fields.Nested(PlainFlashCardSchema()), load_only=True)
     users = fields.List(fields.Nested(PlainUserSchema(), many=True, load_only=True))
 
 class FlashCardAndTagSchema(Schema):

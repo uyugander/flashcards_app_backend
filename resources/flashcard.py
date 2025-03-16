@@ -1,10 +1,11 @@
 from flask.views import MethodView
-from flask_jwt_extended import get_jwt, jwt_required
+from flask_jwt_extended import get_jwt, get_jwt_identity, jwt_required
 from flask_smorest import Blueprint, abort
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.orm import joinedload
 
 from db import db
-from models import FlashCardModel
+from models import FlashCardModel, TagModel
 from schemas import FlashCardSchema, FlashCardUpdateSchema
 
 blp = Blueprint("flashcards", __name__, description="Operations on flashcards")
@@ -62,33 +63,56 @@ class FlashCardList(MethodView):
     @jwt_required(fresh=False)
     @blp.response(200, FlashCardSchema(many=True))
     def get(self):
-        """Get a list of all flashcards"""
-        return FlashCardModel.query.all()
+        """Get a list of all flashcards for the currently logged-in user"""
+        user_id = get_jwt_identity()
+
+        # Fetch flashcards with tags loaded eagerly
+        flashcards = FlashCardModel.query.filter_by(user_id=user_id).options(joinedload(FlashCardModel.tags)).all()
+
+        print(FlashCardModel.query.filter_by(user_id=user_id).options(joinedload(FlashCardModel.tags)))
+
+        return flashcards
 
     @jwt_required(fresh=False)
     @blp.arguments(FlashCardSchema)
     @blp.response(201, FlashCardSchema)
     def post(self, flashcard_data):
-        """Create a new flashcard"""
+        """Create a new flashcard and link tags in a single API call"""
+        user_id = get_jwt_identity()
+
         # Check if the user already has a flashcard with the same question
         existing_flashcard = FlashCardModel.query.filter_by(
-            user_id=flashcard_data["user_id"], 
+            user_id=user_id, 
             question=flashcard_data["question"]
         ).first()
         
         if existing_flashcard:
             abort(400, message="A flashcard with the same question already exists for this user.")
 
-        flashcard = FlashCardModel(**flashcard_data)
+        # Extract tags from the request data (if provided)
+        tag_names = flashcard_data.pop("tags", [])
+
+        # Create the flashcard with the authenticated user's ID
+        flashcard = FlashCardModel(user_id=user_id, **flashcard_data)
+
+        # Add tags to the flashcard
+        for tag_name in tag_names:
+            # Check if the tag already exists for the user
+            tag = TagModel.query.filter_by(name=tag_name, user_id=user_id).first()
+            if not tag:
+                # Create a new tag if it doesn't exist
+                tag = TagModel(name=tag_name, user_id=user_id)
+                db.session.add(tag)
+            flashcard.tags.append(tag)
 
         try:
             db.session.add(flashcard)
             db.session.commit()
         except IntegrityError:
-            db.session.rollback()  # Rollback in case of error
-            abort(400, message="A flash card with the same question or answer already exists.")
+            db.session.rollback()
+            abort(400, message="A flashcard with the same question or answer already exists.")
         except SQLAlchemyError:
-            db.session.rollback()  # Rollback in case of error
-            abort(500, message="An error occurred while saving the flash card to the database.")
+            db.session.rollback()
+            abort(500, message="An error occurred while saving the flashcard to the database.")
 
         return flashcard
