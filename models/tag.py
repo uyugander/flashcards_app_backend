@@ -1,12 +1,14 @@
 import uuid
 
+from sqlalchemy.dialects.postgresql import UUID
+
 from db import db
 
 
 class TagModel(db.Model):
     __tablename__ = "tags"
 
-    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # Use UUID type
     name = db.Column(db.String(80), nullable=False, index=True)
     user_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False)  # Foreign key to users
 

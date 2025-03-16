@@ -1,5 +1,6 @@
 import os
 
+from dotenv import load_dotenv
 from flask import Flask, jsonify
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
@@ -15,6 +16,7 @@ from resources.user import blp as UserBlueprint
 
 def create_app(db_url=None, debug=False):
     app = Flask(__name__)
+    load_dotenv()
 
     # Enables Flask to propagate exceptions from extensions to the main app for easier debugging.
     app.config["PROPAGATE_EXCEPTION"] = True

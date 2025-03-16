@@ -10,7 +10,7 @@ class UserModel(db.Model):
 
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     username = db.Column(db.String(80), unique=True, nullable=False, index=True)
-    password = db.Column(db.String(120), unique=False, nullable=False)
+    password = db.Column(db.String(256), unique=False, nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
 
     # Relationship for flashcards

@@ -1,5 +1,6 @@
 import uuid
 
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 
 from db import db
@@ -8,7 +9,7 @@ from db import db
 class FlashCardModel(db.Model):
     __tablename__ = "flashcards"
 
-    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # Ensure UUID type consistency
     question = db.Column(db.String(255), nullable=False)
     answer = db.Column(db.String(255), nullable=False)
     user_id = db.Column(db.String, db.ForeignKey("users.id"), nullable=False, index=True)

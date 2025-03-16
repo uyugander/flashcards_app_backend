@@ -1,8 +1,8 @@
-"""empty message
+"""Fix UUID foreign key issue
 
-Revision ID: cea04681abd9
+Revision ID: a3b3425d6ab2
 Revises: 
-Create Date: 2025-01-27 20:30:55.803615
+Create Date: 2025-03-16 22:35:06.993801
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'cea04681abd9'
+revision = 'a3b3425d6ab2'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -33,7 +33,7 @@ def upgrade():
     sa.Column('question', sa.String(length=255), nullable=False),
     sa.Column('answer', sa.String(length=255), nullable=False),
     sa.Column('user_id', sa.String(), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id'),
@@ -43,7 +43,7 @@ def upgrade():
         batch_op.create_index(batch_op.f('ix_flashcards_user_id'), ['user_id'], unique=False)
 
     op.create_table('tags',
-    sa.Column('id', sa.String(length=36), nullable=False),
+    sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('name', sa.String(length=80), nullable=False),
     sa.Column('user_id', sa.String(length=36), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
@@ -54,11 +54,11 @@ def upgrade():
         batch_op.create_index(batch_op.f('ix_tags_name'), ['name'], unique=False)
 
     op.create_table('flashcards_tags',
-    sa.Column('flashcard_id', sa.String(length=36), nullable=False),
-    sa.Column('tag_id', sa.String(length=36), nullable=False),
-    sa.Column('id', sa.String(length=36), nullable=False),
-    sa.ForeignKeyConstraint(['flashcard_id'], ['flashcards.id'], ),
-    sa.ForeignKeyConstraint(['tag_id'], ['tags.id'], ),
+    sa.Column('flashcard_id', sa.UUID(), nullable=False),
+    sa.Column('tag_id', sa.UUID(), nullable=False),
+    sa.Column('id', sa.UUID(), nullable=False),
+    sa.ForeignKeyConstraint(['flashcard_id'], ['flashcards.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['tag_id'], ['tags.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('flashcard_id', 'tag_id', 'id')
     )
     # ### end Alembic commands ###
