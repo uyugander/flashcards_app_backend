@@ -2,6 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from flask import Flask, jsonify
+from flask_cors import CORS, cross_origin
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from flask_smorest import Api
@@ -35,6 +36,9 @@ def create_app(db_url=None, debug=False):
     app.config["DEBUG"] = debug
 
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "default-secret")  # Load from env var
+    
+    CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "http://localhost:5000"]}})
+    
     db.init_app(app)
     migrate = Migrate(app, db)
 
