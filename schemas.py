@@ -26,7 +26,7 @@ class FlashCardSchema(PlainFlashCardSchema):
     tags = fields.List(fields.Nested(PlainTagSchema()), dump_only=True)  # Directly use 'tags'
 
 class TagSchema(PlainTagSchema):
-    flashcards = fields.List(fields.Nested(PlainFlashCardSchema()), load_only=True)
+    flashcards = fields.List(fields.Nested(PlainFlashCardSchema()), dump_only=True)
     users = fields.List(fields.Nested(PlainUserSchema(), many=True, load_only=True))
 
 class FlashCardAndTagSchema(Schema):
