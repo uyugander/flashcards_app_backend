@@ -6,7 +6,8 @@ from sqlalchemy.orm import joinedload
 
 from db import db
 from models import FlashCardModel, TagModel
-from schemas import FlashCardSchema, FlashCardUpdateSchema
+from schemas import (FlashCardRequestSchema, FlashCardResponseSchema,
+                     FlashCardSchema, FlashCardUpdateSchema)
 
 blp = Blueprint("flashcards", __name__, description="Operations on flashcards")
 
@@ -69,13 +70,11 @@ class FlashCardList(MethodView):
         # Fetch flashcards with tags loaded eagerly
         flashcards = FlashCardModel.query.filter_by(user_id=user_id).options(joinedload(FlashCardModel.tags)).all()
 
-        print(FlashCardModel.query.filter_by(user_id=user_id).options(joinedload(FlashCardModel.tags)))
-
         return flashcards
 
     @jwt_required(fresh=False)
-    @blp.arguments(FlashCardSchema)
-    @blp.response(201, FlashCardSchema)
+    @blp.arguments(FlashCardRequestSchema)
+    @blp.response(201, FlashCardResponseSchema)
     def post(self, flashcard_data):
         """Create a new flashcard and link tags in a single API call"""
         user_id = get_jwt_identity()

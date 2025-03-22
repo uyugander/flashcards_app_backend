@@ -20,6 +20,16 @@ class FlashCardUpdateSchema(Schema):
     answer = fields.Str()
     user_id = fields.Str()
 
+# Request schema (for input)
+class FlashCardRequestSchema(PlainFlashCardSchema):
+    user = fields.Nested(PlainUserSchema(), dump_only=True)   # Include user details
+    tags = fields.List(fields.Str(), required=False)  # Tags as strings for input
+
+# Response schema (for output)
+class FlashCardResponseSchema(PlainFlashCardSchema):
+    user = fields.Nested(PlainUserSchema(), dump_only=True)   # User details in response
+    tags = fields.List(fields.Nested(PlainTagSchema()), dump_only=True)  # Tags as objects in response
+
 class FlashCardSchema(PlainFlashCardSchema):
     user = fields.Nested(PlainUserSchema(), dump_only=True)   # Include user details
     tags = fields.List(fields.Str(), required=False, load_only=True)  # Allow tags in request
