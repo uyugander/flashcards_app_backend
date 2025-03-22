@@ -94,15 +94,25 @@ class FlashCardList(MethodView):
         # Create the flashcard with the authenticated user's ID
         flashcard = FlashCardModel(user_id=user_id, **flashcard_data)
 
-        # Add tags to the flashcard
-        for tag_name in tag_names:
-            # Check if the tag already exists for the user
-            tag = TagModel.query.filter_by(name=tag_name, user_id=user_id).first()
+        # If no tags provided, assign a default tag
+        if not tag_names:
+            default_tag_name = "default"  # You can change this to whatever default you want
+            tag = TagModel.query.filter_by(name=default_tag_name, user_id=user_id).first()
             if not tag:
-                # Create a new tag if it doesn't exist
-                tag = TagModel(name=tag_name, user_id=user_id)
+                # Create the default tag if it doesn’t exist
+                tag = TagModel(name=default_tag_name, user_id=user_id)
                 db.session.add(tag)
             flashcard.tags.append(tag)
+        else:
+            # Add tags to the flashcard
+            for tag_name in tag_names:
+                # Check if the tag already exists for the user
+                tag = TagModel.query.filter_by(name=tag_name, user_id=user_id).first()
+                if not tag:
+                    # Create a new tag if it doesn't exist
+                    tag = TagModel(name=tag_name, user_id=user_id)
+                    db.session.add(tag)
+                flashcard.tags.append(tag)
 
         try:
             db.session.add(flashcard)
