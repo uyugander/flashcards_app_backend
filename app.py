@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 from dotenv import load_dotenv
 from flask import Flask, jsonify
@@ -36,6 +37,8 @@ def create_app(db_url=None, debug=False):
     app.config["DEBUG"] = debug
 
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "default-secret")  # Load from env var
+    # Set access token expiration (e.g., 15 minutes)
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=1)
     
     CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "http://localhost:5000"]}})
     
