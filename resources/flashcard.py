@@ -61,7 +61,7 @@ class FlashCard(MethodView):
 @blp.route("/flashcard")
 class FlashCardList(MethodView):
     
-    @jwt_required(fresh=False)
+    @jwt_required()
     @blp.response(200, FlashCardSchema(many=True))
     def get(self):
         """Get a list of all flashcards for the currently logged-in user"""
@@ -72,7 +72,7 @@ class FlashCardList(MethodView):
 
         return flashcards
 
-    @jwt_required(fresh=False)
+    @jwt_required()
     @blp.arguments(FlashCardRequestSchema)
     @blp.response(201, FlashCardResponseSchema)
     def post(self, flashcard_data):
